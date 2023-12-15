@@ -41,5 +41,5 @@ def set_data(dvid, device_emp_id):
     return jsonify({'message': 'Successfully processed the data'}), 200
 
 
-if __name__ == '__main__':
-    app.run(host="0.0.0.0")
+#if __name__ == '__main__':
+    #app.run(host="0.0.0.0")
