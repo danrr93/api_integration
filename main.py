@@ -1,4 +1,4 @@
-import requests, json, time, sqlite3, api
+import requests, json, time, sqlite3
 #remember, now functions needs args
 
 def checkDB():
@@ -20,18 +20,17 @@ def checkDB():
     c.execute(sqlstr)
 
     sqlstr = '''CREATE TABLE IF NOT EXISTS clients (
-        id INTEGER, 
+        id TEXT PRIMARY KEY, 
         name TEXT, 
         login TEXT, 
         user TEXT, 
         password TEXT, 
-        token TEXT,
-        PRIMARY KEY("id" AUTOINCREMENT)
+        token TEXT
         )'''
     c.execute(sqlstr)
 
     sqlstr = '''CREATE TABLE IF NOT EXISTS devices (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id TEXT PRIMARY KEY,
         client_id INTEGER,
         name TEXT,
         plant INTEGER,
@@ -192,16 +191,16 @@ def updateEmployees(codplanta, apitoken, client):
                 map = {"True": True, "False": False} 
                 afa = map[afa]
 
-                if mat == matricula:
-                    print('matricula igual')
-                if nam == nome:
-                    print('nome igual')
-                if pla == codplanta:
-                    print('plant igual')
-                if afa == afastado:
-                    print('afastado igual')
-                if cra == str(cracha):
-                    print('cracha igual')
+                #if mat == matricula:
+                    #print('matricula igual')
+                #if nam == nome:
+                    #print('nome igual')
+                #if pla == codplanta:
+                    #print('plant igual')
+                #if afa == afastado:
+                    #print('afastado igual')
+                #if cra == str(cracha):
+                    #print('cracha igual')
                 #time.sleep(3)
 
                 #verify if employee is edited by mobi software
@@ -251,17 +250,18 @@ def sendEmployeesToDevice(client, plant):
             (device_id, employee_id, client_id, status) VALUES 
             ('{device_id}', '{employee_id}', '{client_id}', '{status}')
             '''.format(device_id = id, employee_id = emp_id, client_id = client, status = status)
+            print(sqlstr)
             c.execute(sqlstr)
 
             sqlstr = '''update employees set status = 'OK' WHERE
             matricula = '{emp_id}' and planta = '{plant}' '''.format(emp_id=emp_id, plant=plant)
+            print(sqlstr)
             c.execute(sqlstr)
 
             conn.commit()
 
     c.close()
     conn.close()
-
 
 
 def mainloop():
