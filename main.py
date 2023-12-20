@@ -44,6 +44,7 @@ def checkDB():
         device_id INTEGER,
         employee_id INTEGER,
         client_id INTEGER,
+        cracha VARCHAR(20),
         status VARCHAR(10),
         FOREIGN KEY(client_id) REFERENCES clients(id),
         FOREIGN KEY(device_id) REFERENCES devices(id),
@@ -232,24 +233,27 @@ def sendEmployeesToDevice(client, plant):
     sqlstr = "select * from devices where client_id = '{client}' and plant = '{plant}'".format(client=client, plant=plant)
     c.execute(sqlstr)
     devices = c.fetchall()
+    #print('devices is:', devices)
+    #time.sleep(3)
 
     sqlstr = "select * from employees where client_id = '{client}' and planta = '{plant}' and status is not 'OK'".format(client=client, plant=plant)
     c.execute(sqlstr)
     employees = c.fetchall()
 
     for employee in employees:
-        print(employee)
+        #print(employee)
         emp_id = employee[0]
         status = employee[6]
+        cracha = employee[3]
 
         for device in devices:
             print(device)
             id = device[0]
 
             sqlstr = '''insert into device_employees 
-            (device_id, employee_id, client_id, status) VALUES 
-            ('{device_id}', '{employee_id}', '{client_id}', '{status}')
-            '''.format(device_id = id, employee_id = emp_id, client_id = client, status = status)
+            (device_id, employee_id, client_id, cracha, status) VALUES 
+            ('{device_id}', '{employee_id}', '{client_id}', '{cracha}', '{status}')
+            '''.format(device_id = id, employee_id = emp_id, client_id = client, cracha=cracha, status = status)
             print(sqlstr)
             c.execute(sqlstr)
 
@@ -285,7 +289,7 @@ def mainloop():
                 continue
 
             if res == 0:
-                print("Start to populate device_employees")
+                print("Start to populate device_employees at clid:", client_id, "and plant:", planta)
                 time.sleep(3)
                 sendEmployeesToDevice(client_id, planta)
                 #ok, continue running
