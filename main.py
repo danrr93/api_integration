@@ -2,7 +2,7 @@ import requests, json, time, sqlite3
 #remember, now functions needs args
 
 def checkDB():
-    conn = sqlite3.connect('mobi.db')
+    conn = sqlite3.connect('/home/ubuntu/api_integration/mobi.db')
     c = conn.cursor()
 
     #cria todas as tabelas no banco
@@ -57,7 +57,7 @@ def checkDB():
 
 def getClients():
     #pega todos os registros em clients
-    conn = sqlite3.connect('mobi.db')
+    conn = sqlite3.connect('/home/ubuntu/api_integration/mobi.db')
     c = conn.cursor()
     sqlstr = "select * from clients"
     c.execute(sqlstr)
@@ -90,7 +90,7 @@ def loginApi(userid, password, clientlogin):
 
     jsondata = json.loads(res.content)
 
-    conn = sqlite3.connect('mobi.db')
+    conn = sqlite3.connect('/home/ubuntu/api_integration/mobi.db')
     c = conn.cursor()
     sqlstr = "update clients set token = '{apitoken}' where login = '{clid}'".format(apitoken = jsondata["accessToken"], clid=clientlogin)
     c.execute(sqlstr)
@@ -141,7 +141,7 @@ def updateEmployees(codplanta, apitoken, client):
     #prepare to write employees in db
     print('writing mobiemployees DB file...')
 
-    conn = sqlite3.connect('mobi.db')
+    conn = sqlite3.connect('/home/ubuntu/api_integration/mobi.db')
     c = conn.cursor()
     #c.execute("CREATE TABLE IF NOT EXISTS employees (matricula  VARCHAR(100), nome  TEXT, planta TEXT, afastado  INTEGER, cracha VARCHAR(50), client_id INTEGER, planta INTEGER, PRIMARY KEY(matricula))")
 
@@ -227,7 +227,7 @@ def updateEmployees(codplanta, apitoken, client):
 
 
 def sendEmployeesToDevice(client, plant):
-    conn = sqlite3.connect('mobi.db')
+    conn = sqlite3.connect('/home/ubuntu/api_integration/mobi.db')
     c = conn.cursor()
 
     sqlstr = "select * from devices where client_id = '{client}' and plant = '{plant}'".format(client=client, plant=plant)
