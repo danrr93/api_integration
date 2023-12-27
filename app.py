@@ -1,11 +1,14 @@
 from flask import Flask, jsonify, request
+from datetime import datetime
 import sqlite3, uuid
+
+dbpath = '/home/ubuntu/api_integration/mobi.db'
 
 app = Flask(__name__)
 
 @app.route('/api/data/<clid>/<dvid>', methods=['GET'])
 def get_employees(clid, dvid):
-    conn = sqlite3.connect('/home/ubuntu/api_integration/mobi.db')
+    conn = sqlite3.connect(dbpath)
     cursor = conn.cursor()
 
     sqlstr = "SELECT * FROM device_employees WHERE device_id = '{dvid}' and client_id = '{clid}' and status is not 'OK'".format(dvid = dvid, clid = clid)
@@ -35,7 +38,7 @@ def set_employee_ok(dvid, device_emp_id):
         return jsonify({'message': 'No input data provided'}), 400
     
     if data["data"] == 'OK':
-        conn = sqlite3.connect('/home/ubuntu/api_integration/mobi.db')
+        conn = sqlite3.connect(dbpath)
         c = conn.cursor()
         sqlstr = "update device_employees set status = 'OK' where id = '{device_emp_id}'".format(device_emp_id=device_emp_id)
         print(sqlstr)
@@ -64,7 +67,7 @@ def new_device():
             device_id = str(uuid.uuid4())
 
             #verifying if this client exists
-            conn = sqlite3.connect('/home/ubuntu/api_integration/mobi.db')
+            conn = sqlite3.connect(dbpath)
             c = conn.cursor()
             sqlstr = '''select * from clients where id = '{clientid}' '''.format(clientid=client)
             c.execute(sqlstr)
@@ -108,7 +111,7 @@ def new_device():
 
 @app.route('/api/getdevices', methods=['GET'])
 def get_devices():
-    conn = sqlite3.connect('/home/ubuntu/api_integration/mobi.db')
+    conn = sqlite3.connect(dbpath)
     c = conn.cursor()
     sqlstr = '''select * from devices'''
     c.execute(sqlstr)
@@ -141,7 +144,7 @@ def new_client():
 
             client_id = str(uuid.uuid4())
 
-            conn = sqlite3.connect('/home/ubuntu/api_integration/mobi.db')
+            conn = sqlite3.connect(dbpath)
             c = conn.cursor()
             sqlstr = '''insert into clients VALUES 
             ('{client_id}', '{name}', '{login}', '{user}', '{password}', '0')
@@ -158,7 +161,7 @@ def new_client():
 
 @app.route('/api/getclients', methods=['GET'])
 def get_clients():
-    conn = sqlite3.connect('/home/ubuntu/api_integration/mobi.db')
+    conn = sqlite3.connect(dbpath)
     c = conn.cursor()
     sqlstr = '''select * from clients'''
     c.execute(sqlstr)
@@ -184,7 +187,7 @@ def del_client():
         client_id = data['client_id']
         password = data['password']
         if password == '@#$SS1a@@':
-            conn = sqlite3.connect('/home/ubuntu/api_integration/mobi.db')
+            conn = sqlite3.connect(dbpath)
             c = conn.cursor()
 
             sqlstr = '''delete from device_employees where
@@ -223,7 +226,7 @@ def del_device():
         client_id = data['client_id']
         password = data['password']
         if password == '@#$SS1a@@':
-            conn = sqlite3.connect('/home/ubuntu/api_integration/mobi.db')
+            conn = sqlite3.connect(dbpath)
             c = conn.cursor()
 
             sqlstr = '''delete from device_employees where client_id = '{client_id}' '''.format(client_id=client_id)
@@ -235,6 +238,19 @@ def del_device():
             return jsonify({'message': 'Device deleted'}), 200
 
                 
+@app.route('/api/datetime', methods=['GET'])
+def get_datetime():
+    current_datetime = datetime.now()
+
+    dia = current_datetime.day
+    mes = current_datetime.month
+    ano = current_datetime.year
+
+    hora = current_datetime.hour
+    minuto = current_datetime.minute
+    segundo = current_datetime.second
+
+    return jsonify({'dia': dia, 'mes': mes, 'ano': ano, 'hora': hora, 'minuto': minuto, 'segundo': segundo})
 
 
 if __name__ == '__main__':
