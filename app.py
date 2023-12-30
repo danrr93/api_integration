@@ -60,7 +60,7 @@ def new_device():
 
         client = data["client_id"]
         plant = data["plant"]
-        name = data["name"]
+        mac = data["mac"]
         password = data["password"]
         if password == "@#$SS1a@@":
 
@@ -79,7 +79,7 @@ def new_device():
                 return jsonify({'message': 'Something wrong with this client_id!'}), 400
 
             sqlstr = '''insert into devices 
-            values ('{id}', '{clid}', '{name}', '{plant}') '''.format(id = device_id, clid=client, name=name, plant=plant)
+            values ('{id}', '{clid}', '{mac}', '{plant}', '0') '''.format(id = device_id, clid=client, mac=mac, plant=plant)
             print(sqlstr)
             try:
                 c.execute(sqlstr)
@@ -108,6 +108,48 @@ def new_device():
             return jsonify({'message': 'Device saved ok!'}), 200
         return jsonify({'message': 'Wrong password!'}), 400
 
+@app.route('/api/syncdevice', methods=['POST'])
+def sync_device():
+    data = request.get_json()  # get data from POST request
+    if not data:
+        return jsonify({'message': 'No input data provided'}), 400
+
+    if data:
+        devmac = data["mac"]
+        conntime = data["conn_time"]
+
+        conn = sqlite3.connect(dbpath)
+        c = conn.cursor()
+        sqlstr = "select * from devices where mac = '{devmac}'".format(devmac=devmac)
+        c.execute(sqlstr)
+        device = c.fetchall()
+
+        count = 0
+        for dev in device:
+            iddev = dev[0]
+            count += 1
+            if count != 1:
+                c.close()
+                conn.close()
+                return jsonify({"message": "Error, find more than one device with this mac!"}), 400
+            
+        if count == 0:
+            c.close()
+            conn.close()
+            return jsonify({"message": "Error, find 0 devices with this mac!"}), 400
+        
+        sqlstr = "update devices set conn_time = '{conntime}' where id = '{iddev}'".format(conntime=conntime, iddev=iddev)
+        try:
+            c.execute(sqlstr)
+        except Exception:
+            c.close()
+            conn.close()
+            return jsonify({"message": "Error, maybe db is locked!"}), 400
+        
+        conn.commit()
+        c.close()
+        conn.close()
+        return jsonify({"device_id": iddev}), 200
 
 @app.route('/api/getdevices', methods=['GET'])
 def get_devices():

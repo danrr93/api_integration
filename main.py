@@ -34,8 +34,9 @@ def checkDB():
     sqlstr = '''CREATE TABLE IF NOT EXISTS devices (
         id TEXT PRIMARY KEY,
         client_id INTEGER,
-        name TEXT,
+        mac TEXT,
         plant INTEGER,
+        conn_time VARCHAR(20),
         FOREIGN KEY(client_id) REFERENCES clients(id)
         )
         '''
@@ -91,6 +92,10 @@ def loginApi(userid, password, clientlogin):
             break
 
     jsondata = json.loads(res.content)
+
+    if jsondata["authenticated"] == False:
+        print("Error at authenticate client:", clientlogin)
+        return "ERROR"
 
     conn = sqlite3.connect(dbpath)
     c = conn.cursor()
@@ -288,7 +293,10 @@ def mainloop():
                 #time to update token
                 print("status 401, running token")
                 token = loginApi(user, password, clientlogin)
-                continue
+                if token != "ERROR":
+                    continue
+                else:
+                    break
 
             if res == 0:
                 print("Start to populate device_employees at clid:", client_id, "and plant:", planta)
