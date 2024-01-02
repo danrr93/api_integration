@@ -163,7 +163,11 @@ def sync_device():
 
         #pega o arquivo firmware
         full_path = '{firmwaredir}{clid}'.format(firmwaredir=firmwaredir, clid=clientid)
-        file_list = os.listdir(full_path)
+        try:
+            file_list = os.listdir(full_path)
+        except Exception:
+            file_name = 'none'
+            
         count = 0
         for file in file_list:
             count += 1
