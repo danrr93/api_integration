@@ -165,8 +165,9 @@ def sync_device():
         full_path = '{firmwaredir}{clid}'.format(firmwaredir=firmwaredir, clid=clientid)
         try:
             file_list = os.listdir(full_path)
-        except Exception:
-            file_name = 'none'
+        except Exception as e:
+            print(str(e))
+            return jsonify({"firm_version": "none", "device_id": iddev, "codcontrole": codcontrole, "referencia": referencia}), 200
             
         count = 0
         for file in file_list:
