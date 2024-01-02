@@ -61,6 +61,8 @@ def new_device():
         client = data["client_id"]
         plant = data["plant"]
         mac = data["mac"]
+        codcontrole_prod = data["codcontrole_prod"]
+        referencia_prod = data["referencia_prod"]
         password = data["password"]
         if password == "@#$SS1a@@":
 
@@ -79,7 +81,8 @@ def new_device():
                 return jsonify({'message': 'Something wrong with this client_id!'}), 400
 
             sqlstr = '''insert into devices 
-            values ('{id}', '{clid}', '{mac}', '{plant}', '0') '''.format(id = device_id, clid=client, mac=mac, plant=plant)
+            values ('{id}', '{clid}', '{mac}', '{plant}', '0', '{codcontrole}', '{referencia}')
+            '''.format(id = device_id, clid=client, mac=mac, plant=plant, codcontrole=codcontrole_prod, referencia=referencia_prod)
             print(sqlstr)
             try:
                 c.execute(sqlstr)
@@ -108,6 +111,7 @@ def new_device():
             return jsonify({'message': 'Device saved ok!'}), 200
         return jsonify({'message': 'Wrong password!'}), 400
 
+
 @app.route('/api/syncdevice', methods=['POST'])
 def sync_device():
     data = request.get_json()  # get data from POST request
@@ -127,6 +131,8 @@ def sync_device():
         count = 0
         for dev in device:
             iddev = dev[0]
+            codcontrole = dev[6]
+            referencia = dev[5]
             count += 1
             if count != 1:
                 c.close()
@@ -149,7 +155,8 @@ def sync_device():
         conn.commit()
         c.close()
         conn.close()
-        return jsonify({"device_id": iddev}), 200
+        return jsonify({"device_id": iddev, "codcontrole": codcontrole, "referencia": referencia}), 200
+
 
 @app.route('/api/getdevices', methods=['GET'])
 def get_devices():
@@ -294,6 +301,22 @@ def get_datetime():
 
     return jsonify({'dia': dia, 'mes': mes, 'ano': ano, 'hora': hora, 'minuto': minuto, 'segundo': segundo})
 
+
+@app.route('/api/getclient/<id>', methods=['GET'])
+def get_client(id):
+    conn = sqlite3.connect(dbpath)
+    c = conn.cursor()
+    sqlstr = '''select * from clients where id = '{id}' '''.format(id=id)
+    c.execute(sqlstr)
+    client = c.fetchall()
+    data = []
+    for row in client:
+        data.append({description[0]: column for description, column in zip(c.description, row)})
+
+    c.close()
+    conn.close()
+
+    return jsonify(data)
 
 if __name__ == '__main__':
     app.run()

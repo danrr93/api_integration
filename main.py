@@ -37,6 +37,8 @@ def checkDB():
         mac TEXT,
         plant INTEGER,
         conn_time VARCHAR(20),
+        referencia_prod TEXT,
+        codcontrole_prod TEXT,
         FOREIGN KEY(client_id) REFERENCES clients(id)
         )
         '''
