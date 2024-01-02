@@ -1,10 +1,14 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_file
 from datetime import datetime
 import sqlite3, uuid
+from werkzeug.utils import secure_filename
+import os
 
 dbpath = '/home/ubuntu/api_integration/mobi.db'
+firmwaredir = '/home/ubuntu/api_integration/firmwares/'
 
 app = Flask(__name__)
+#app.config['UPLOAD_FOLDER'] = './'
 
 @app.route('/api/data/<clid>/<dvid>', methods=['GET'])
 def get_employees(clid, dvid):
@@ -131,6 +135,7 @@ def sync_device():
         count = 0
         for dev in device:
             iddev = dev[0]
+            clientid = dev[1]
             codcontrole = dev[6]
             referencia = dev[5]
             count += 1
@@ -155,7 +160,19 @@ def sync_device():
         conn.commit()
         c.close()
         conn.close()
-        return jsonify({"device_id": iddev, "codcontrole": codcontrole, "referencia": referencia}), 200
+
+        #pega o arquivo firmware
+        full_path = '{firmwaredir}{clid}'.format(firmwaredir=firmwaredir, clid=clientid)
+        file_list = os.listdir(full_path)
+        count = 0
+        for file in file_list:
+            count += 1
+        if count != 1:
+            file_name = 'none'
+        else:
+            file_name=file
+
+        return jsonify({"firm_version": file_name, "device_id": iddev, "codcontrole": codcontrole, "referencia": referencia}), 200
 
 
 @app.route('/api/getdevices', methods=['GET'])
@@ -317,6 +334,66 @@ def get_client(id):
     conn.close()
 
     return jsonify(data)
+
+
+@app.route('/api/firmwareupdate/<clid>', methods=['POST'])
+def upload_file(clid):
+    #verifica se client existe
+    conn = sqlite3.connect(dbpath)
+    c = conn.cursor()
+    sqlstr = '''select * from clients where id = '{clid}' '''.format(clid=clid)
+    c.execute(sqlstr)
+    rows = c.fetchall()
+    c.close()
+    conn.close()
+
+    count = 0
+    for client in rows:
+        idclient = client[0]
+        count += 1
+    
+    if count != 1:
+        return "Error with this client_id"
+    
+
+    if 'file' not in request.files:
+        return 'No file part'
+    
+    password = request.args.get('password')
+    if password != 'xy998U1$4':
+        return 'Generic Error'
+    
+    #se client existir, cria pasta
+    full_path = '{firmwaredir}{clid}'.format(firmwaredir=firmwaredir, clid=idclient)
+    os.makedirs(full_path, exist_ok=True)
+
+    file = request.files['file']
+    if file.filename == '':
+        return 'No selected file'
+    
+    filename = secure_filename(file.filename)
+    file_path = os.path.join(full_path, filename)
+
+    if os.path.isfile(file_path):
+       return f"The file {file_path} exists."
+    
+    #remover qualquer arquivo antigo
+    file_list = os.listdir(full_path)
+    for file_name in file_list:
+        file_path = os.path.join(full_path, file_name)
+        if os.path.isfile(file_path):
+            os.remove(file_path)
+
+
+    file.save(os.path.join(full_path, filename))
+    return 'File uploaded successfully'
+
+
+@app.route('/api/firmwareupdate/getfile/<clid>/<filename>', methods=['GET'])
+def get_file(clid, filename):
+    full_path = f'{firmwaredir}/{clid}/{filename}'
+    return send_file(full_path, as_attachment=True)
+
 
 if __name__ == '__main__':
     app.run()
