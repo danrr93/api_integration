@@ -3,6 +3,7 @@ from datetime import datetime
 import sqlite3, uuid
 from werkzeug.utils import secure_filename
 import os
+from time import sleep
 
 dbpath = '/home/ubuntu/api_integration/mobi.db'
 firmwaredir = '/home/ubuntu/api_integration/firmwares/'
@@ -46,7 +47,15 @@ def set_employee_ok(dvid, device_emp_id):
         c = conn.cursor()
         sqlstr = "update device_employees set status = 'OK' where id = '{device_emp_id}'".format(device_emp_id=device_emp_id)
         print(sqlstr)
-        c.execute(sqlstr)
+
+        while True:
+            try:
+                c.execute(sqlstr)
+            except Exception:
+                sleep(2)
+                continue
+            break
+
         conn.commit()
         c.close()
         conn.close()
