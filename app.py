@@ -176,7 +176,7 @@ def sync_device():
             file_list = os.listdir(full_path)
         except Exception as e:
             print(str(e))
-            return jsonify({"firm_version": "none", "device_id": iddev, "codcontrole": codcontrole, "referencia": referencia}), 200
+            return jsonify({"firm_version": "none", "client_id": clientid, "device_id": iddev, "codcontrole": codcontrole, "referencia": referencia}), 200
             
         count = 0
         for file in file_list:
@@ -186,7 +186,7 @@ def sync_device():
         else:
             file_name=file
 
-        return jsonify({"firm_version": file_name, "device_id": iddev, "codcontrole": codcontrole, "referencia": referencia}), 200
+        return jsonify({"firm_version": file_name, "client_id": clientid, "device_id": iddev, "codcontrole": codcontrole, "referencia": referencia}), 200
 
 
 @app.route('/api/getdevices', methods=['GET'])
