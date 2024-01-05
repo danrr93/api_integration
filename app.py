@@ -409,5 +409,41 @@ def get_file(clid, filename):
     return send_file(full_path, as_attachment=True)
 
 
+@app.route('/api/newevent', methods=['POST'])
+def new_event():
+    data = request.get_json()  # get data from POST request
+    if not data:
+        return jsonify({'message': 'No input data provided'}), 400
+
+    if data:
+        matricula = data['matricula']
+        codControle = data['codigoControle']
+        referencia = data['referencia']
+        qntConsumida = data['quantidadeConsumida']
+        datahora = data['dataHora']
+        event_id = str(uuid.uuid4())
+        clid = data['client_id']
+        dvid = data['device_id']
+
+        conn = sqlite3.connect(dbpath)
+        c = conn.cursor()
+        sqlstr = '''
+            insert into events values ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')
+        ''' % (event_id, matricula, codControle, referencia, qntConsumida, datahora, clid, dvid)
+        try:
+            c.execute(sqlstr)
+        except Exception:
+            print('error at save event!')
+            c.close()
+            conn.close()
+            return jsonify({"message": "Error, please try again"}), 400
+
+        conn.commit()
+        c.close()
+        conn.close()
+
+        return jsonify({"message": "event saved!"}), 200
+        
+
 if __name__ == '__main__':
     app.run()

@@ -56,6 +56,20 @@ def checkDB():
         FOREIGN KEY(employee_id) REFERENCES employees(id))'''
     c.execute(sqlstr)
 
+    sqlstr = '''
+        CREATE TABLE IF NOT EXISTS events (
+        id VARCHAR(36) PRIMARY KEY,
+        employee_id VARCHAR(36),
+        codcontrole VARCHAR(36),
+        referencia VARCHAR(36),
+        usage INTEGER,
+        datahora TEXT,
+        client_id VARCHAR(36),
+        device_id VARCHAR(36)
+        )
+    '''
+    c.execute(sqlstr)
+
     c.close()
     conn.close()
 
@@ -277,6 +291,55 @@ def sendEmployeesToDevice(client, plant):
     conn.close()
 
 
+def sendEvents(token, client):
+    print('sending events...')
+    time.sleep(10)
+    url = 'https://mobintegration.azurewebsites.net/api/VendingMachine/receberConsumoEpi'
+    headers = {'Authorization': 'Bearer '+token}
+
+    conn = sqlite3.connect(dbpath)
+    c = conn.cursor()   
+    sqlstr = '''select * from events where client_id = '{client}' '''.format(client=client)
+    c.execute(sqlstr)
+    res = c.fetchall()
+
+    for event in res:
+        evid = event[0]
+        employee_id = event[1]
+        codcontrole = event[2]
+        ref = event[3]
+        usage = event[4]
+        datahora = event[5]
+        bjson = {"Matricula": employee_id, "EpisConsumidos":[{"CodigoControle": codcontrole, "Referencia": ref, "QuantidadeConsumida": usage, "DataHora": datahora}]}
+        r = requests.post(url, json=bjson, headers=headers)
+        print(r.content)
+        time.sleep(10)
+
+        if r.status_code != 200:
+            print('erro at send event, status code is:', str(r.status_code))
+            continue
+
+        try:
+            json_data = json.loads(r.content)
+            print(json_data)
+        except Exception:
+            print('error at json loads in send events')
+            continue
+        else:
+            if json_data['ok'] == True:
+                print('event sended!')
+                sqlstr = '''delete from events where id = '{evid}' '''.format(evid = evid)
+                print(sqlstr)
+                c.execute(sqlstr)
+
+            else:
+                print('error at response from API in send events')
+
+    conn.commit()
+    c.close()
+    conn.close()
+
+
 def mainloop():
     checkDB()
 
@@ -290,6 +353,7 @@ def mainloop():
         planta = 0
         while True:
             res = updateEmployees(planta, token, client_id)
+            sendEvents(token, client_id)
 
             if res == 401:
                 #time to update token
@@ -314,8 +378,6 @@ def mainloop():
                 break
 
     print("no more clients")
-
-        
 
     
 mainloop()
