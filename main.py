@@ -313,7 +313,7 @@ def sendEvents(token, client):
         bjson = {"Matricula": employee_id, "DataRetirada": datahora, "EpisConsumidos":[{"CodigoControle": codcontrole, "Referencia": ref, "QuantidadeConsumida": usage, "DataHora": datahora}]}
         r = requests.post(url, json=bjson, headers=headers)
         print(r.content)
-        time.sleep(10)
+        time.sleep(.3)
 
         if r.status_code != 200:
             print('erro at send event, status code is:', str(r.status_code))
