@@ -310,7 +310,7 @@ def sendEvents(token, client):
         ref = event[3]
         usage = event[4]
         datahora = event[5]
-        bjson = {"Matricula": employee_id, "EpisConsumidos":[{"CodigoControle": codcontrole, "Referencia": ref, "QuantidadeConsumida": usage, "DataHora": datahora}]}
+        bjson = {"Matricula": employee_id, "DataRetirada": datahora, "EpisConsumidos":[{"CodigoControle": codcontrole, "Referencia": ref, "QuantidadeConsumida": usage, "DataHora": datahora}]}
         r = requests.post(url, json=bjson, headers=headers)
         print(r.content)
         time.sleep(10)
