@@ -283,6 +283,7 @@ def sendEmployeesToDevice(client, plant):
     c.execute(sqlstr)
     employees = c.fetchall()
 
+    print("Inserindo colaboradores na tabela device_employees")
     for employee in employees:
         #print(employee)
         emp_id = employee[0]
@@ -290,22 +291,22 @@ def sendEmployeesToDevice(client, plant):
         cracha = employee[3]
 
         for device in devices:
-            print(device)
             id = device[0]
-
-            sqlstr = '''insert into device_employees 
+            print("Inserindo o colaborador registro:", emp_id, "para o dispositivo:", id)
+            
+            sqlstr = '''insert into device_employees
             (device_id, employee_id, client_id, cracha, status) VALUES 
             ('{device_id}', '{employee_id}', '{client_id}', '{cracha}', '{status}')
             '''.format(device_id = id, employee_id = emp_id, client_id = client, cracha=cracha, status = status)
-            print(sqlstr)
+            #print(sqlstr)
             c.execute(sqlstr)
 
             sqlstr = '''update employees set status = 'OK' WHERE
             matricula = '{emp_id}' and planta = '{plant}' '''.format(emp_id=emp_id, plant=plant)
-            print(sqlstr)
+            #print(sqlstr)
             c.execute(sqlstr)
 
-            conn.commit()
+    conn.commit()
 
     c.close()
     conn.close()
