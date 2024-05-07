@@ -192,20 +192,27 @@ def updateEmployees(codplanta, apitoken, client):
         sqlstr = '''INSERT INTO employees (matricula, nome, afastado, cracha, client_id, planta, status) 
         VALUES ('{matricula}', '{nome}', '{afastado}', '{cracha}', '{client}', '{planta}', '{status}')
         '''.format(nome=nome, matricula=matricula, planta=codplanta, afastado=afastado, cracha=cracha, client=client, status=status)
-        print(sqlstr)
+        print("Inserindo colaborador matricula:", matricula, "e nome:", nome)
 
         try:
             c.execute(sqlstr)
         except Exception as e:
+            print("Falha na inserção deste colaborador matricula:", matricula, "Erro:", str(e))
+            print("Verificando consistencia dos dados deste colaborador")
             #if failed in add employee by unique pk, select this employee and verifiy if edited by mobi
-            print(str(e))
+
             sqlstr = "SELECT * FROM employees WHERE matricula = '{matricula}' and planta = '{codplanta}'".format(matricula=matricula, codplanta=codplanta)
-            print(sqlstr)
+            #print(sqlstr)
             c.execute(sqlstr)
             rows = c.fetchall()
-            print(rows)
-
+            #print(rows)
+            count = 0
             for row in rows:
+                if count != 0:
+                    print("Parece que existem dois colaboradores com a mesma matricula")
+                    time.sleep(10)
+                    break
+                count += 1
                 mat = row[0]
                 nam = row[1]
                 afa = row[2]
@@ -215,21 +222,34 @@ def updateEmployees(codplanta, apitoken, client):
                 map = {"True": True, "False": False} 
                 afa = map[afa]
 
-                #if mat == matricula:
-                    #print('matricula igual')
-                #if nam == nome:
-                    #print('nome igual')
-                #if pla == codplanta:
-                    #print('plant igual')
-                #if afa == afastado:
-                    #print('afastado igual')
-                #if cra == str(cracha):
-                    #print('cracha igual')
-                #time.sleep(3)
 
                 #verify if employee is edited by mobi software
                 if mat == matricula and nam == nome and pla == codplanta and afa == afastado and cra == str(cracha):
-                    print("Everithing is fine with this employee, nothing to edit")
+                    print("Colaborador não editado, tudo ok")
+
+                elif mat != matricula and nam == nome and pla == codplanta and afa == afastado and cra == str(cracha):
+                    print("Colaborador somente com a matricula diferente")
+                    print("Atualizando matricula na tabela employees")
+                    sqlstr = "UPDATE employees set id = {nova_matricula} WHERE id = {velha_matricula}".format(nova_matricula = matricula, velha_matricula = mat)
+                    try:
+                        c.execute(sqlstr)
+                    except Exception:
+                        continue
+                    #update in device_employees too...
+                    print("Atualizando matricula na tabela device_employees")
+                    sqlstr = "UPDATE device_employees set employee_id = '{empid}', status = 'UPD' WHERE employee_id = '{oldempid}' and client_id = '{clid}'".format(oldempid = mat, clid = client)
+                    try:
+                        c.execute(sqlstr)
+                    except Exception:
+                        continue
+
+                    #agora atualiza employee_id dos eventos
+                    print("Atualizando matrícula nos eventos")
+                    sqlstr = "UPDATE events set employee_id = '{empid}' WHERE employee_id = '{oldempid}', and client_id = '{clid}'".format(oldempid = mat, clid = client)
+                    try:
+                        c.execute(sqlstr)
+                    except Exception:
+                        continue
 
                 else:
                     sqlstr = "UPDATE employees SET nome = '{nam}', planta = '{pla}', afastado = '{afa}', cracha = '{cra}', status = 'UPD' WHERE matricula = '{mat}'".format(mat=matricula, nam=nome, pla=codplanta, afa=afastado, cra=cracha)
@@ -292,8 +312,8 @@ def sendEmployeesToDevice(client, plant):
 
 
 def sendEvents(token, client):
-    print('sending events...')
-    time.sleep(10)
+    print('Enviado eventos...')
+    time.sleep(3)
     url = 'https://mobintegration.azurewebsites.net/api/VendingMachine/receberConsumoEpi'
     headers = {'Authorization': 'Bearer '+token}
 
@@ -335,6 +355,7 @@ def sendEvents(token, client):
             else:
                 print('error at response from API in send events')
 
+    print("Sem eventos por aqui")
     conn.commit()
     c.close()
     conn.close()
@@ -365,11 +386,11 @@ def mainloop():
                     break
 
             if res == 0:
+                print("status 200, updateEmployees run ok for client:", clientlogin, "and plant:", planta)
                 print("Start to populate device_employees at clid:", client_id, "and plant:", planta)
                 time.sleep(3)
                 sendEmployeesToDevice(client_id, planta)
                 #ok, continue running
-                print("status 200, updateEmployees run ok for client:", clientlogin, "and plant:", planta)
                 planta += 1
                 continue
 
@@ -381,4 +402,3 @@ def mainloop():
 
     
 mainloop()
-#sendEmployeesToDevice('1', '1')
