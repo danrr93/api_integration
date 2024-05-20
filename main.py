@@ -67,6 +67,28 @@ except FileNotFoundError:
         file.write("")
 
 
+try:
+    # Try to open the file for reading
+    with open('./lastevent.txt', 'r') as file:
+        # Read the contents of the file
+        mwtoken = file.read()
+except FileNotFoundError:
+    # If the file doesn't exist, create it
+    print("File lastevent doesn't exist. Creating it...")
+    with open('./lastevent.txt', 'w') as file:
+        file.write("")
+
+try:
+    # Try to open the file for reading
+    with open('./eventsnumber.txt', 'r') as file:
+        # Read the contents of the file
+        mwtoken = file.read()
+except FileNotFoundError:
+    # If the file doesn't exist, create it
+    print("File lastevent doesn't exist. Creating it...")
+    with open('./eventsnumber.txt', 'w') as file:
+        file.write("")
+
 def mobiloginApi():
     #Here we update tokens
     #to obtain all args, run getClients first
