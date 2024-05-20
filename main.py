@@ -71,7 +71,7 @@ try:
     # Try to open the file for reading
     with open('./lastevent.txt', 'r') as file:
         # Read the contents of the file
-        mwtoken = file.read()
+        file.read()
 except FileNotFoundError:
     # If the file doesn't exist, create it
     print("File lastevent doesn't exist. Creating it...")
@@ -82,7 +82,7 @@ try:
     # Try to open the file for reading
     with open('./eventsnumber.txt', 'r') as file:
         # Read the contents of the file
-        mwtoken = file.read()
+        file.read()
 except FileNotFoundError:
     # If the file doesn't exist, create it
     print("File lastevent doesn't exist. Creating it...")
@@ -197,6 +197,7 @@ def getAllMWEmployees():
     #url definition and read from apitoken file
     #authorization header definition to access api
     headers = {
+        'Content-Type': 'application/json',
         "Authorization": "Bearer {apitoken}".format(apitoken=mwtoken)
     }
 
@@ -226,8 +227,8 @@ def getAllMWEmployees():
             try:
                 jsondata = json.loads(res.content)
             except Exception:
-                print('failed at json, try to get a new token')
-                mwloginApi()
+                print('failed at json')
+                #mwloginApi()
                 return False
 
             if len(jsondata["data"]) == 0:
