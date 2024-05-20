@@ -87,7 +87,7 @@ except FileNotFoundError:
     # If the file doesn't exist, create it
     print("File lastevent doesn't exist. Creating it...")
     with open('./eventsnumber.txt', 'w') as file:
-        file.write("")
+        file.write("0")
 
 def mobiloginApi():
     #Here we update tokens
