@@ -151,9 +151,12 @@ def getAllMobiEmployees(codplanta):
 
 def mwloginApi():
     print('starting mw api login')
+    headers = {
+        'Content-Type': 'application/json'
+    }
     url = 'https://tecnologias.mwautomacao.com.br/api/login'
-    body = '{"email": "%s", "password": "%s"}' % (mw_client_email_api, mw_client_password_api)
-    res = requests.post(url, json=body)
+    body = {"email": mw_client_email_api, "password": mw_client_password_api}
+    res = requests.post(url, headers=headers, json=body)
 
     if res.status_code != 200:
         print("mw token request failed with status code:", str(res.status_code))
