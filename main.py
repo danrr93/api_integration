@@ -89,6 +89,7 @@ except FileNotFoundError:
     with open('./eventsnumber.txt', 'w') as file:
         file.write("0")
 
+
 def mobiloginApi():
     #Here we update tokens
     #to obtain all args, run getClients first
@@ -232,7 +233,7 @@ def getAllMWEmployees():
                 return False
 
             if len(jsondata["data"]) == 0:
-                print("sem colaboradores nesta pagina da api MW")
+                #print("sem colaboradores nesta pagina da api MW")
                 break
             
             for employee in jsondata["data"]:
@@ -244,56 +245,6 @@ def getAllMWEmployees():
     print("Total:", len(employees_packetfromapi_mw))
 
     return True
-
-
-
-
-
-def findMwEmployee(badge, register):
-    #authorization header definition to access api
-    print("procurando colaborador na api mw com o registro:", register, "e cracha:", badge)
-    headers = {
-        "Authorization": "Bearer {apitoken}".format(apitoken=mwtoken)
-    }
-
-    url = 'https://tecnologias.mwautomacao.com.br/api/employee?registration={register}'.format(register=register)
-
-    res = requests.get(url, headers = headers)
-
-    if res.status_code == 401:
-        print("falha de autenticaca na api mw")
-        return "", 401
-
-    if res.status_code != 200:
-        print("falha na obtencao do colaborador, status code:", str(res.status_code))
-        return "", res.status_code
-    
-    jsondata = json.loads(res.content)
-    if len(jsondata["data"]) == 0:
-        print("registro colaborador ainda nao encontrado na api mw, verificando cracha...")
-        url = 'https://tecnologias.mwautomacao.com.br/api/employee?badge={badge}'.format(badge=badge)
-
-        try:
-            res = requests.get(url, headers=headers)
-        except TimeoutError:
-            print("TimeoutError!")
-            return "", "TIMEOUT"
-        
-        if res.status_code != 200:
-            print("Falha ao pesquisar cracha na API MW, status code:", str(res.status_code))
-            return "", res.status_code
-        
-        jsonbadge = json.loads(res.content)
-
-        if len(jsonbadge["data"]) > 0:
-            print("encontrado cracha:", jsonbadge["data"][0]["badge"], "na api mw")
-            return jsonbadge["data"], 200
-        #cadastra colaborador via api
-    else:
-        print("registro do colaborador encontrado")
-    
-    return jsondata["data"], 200
-
 
 def saveEmployeeInPacket(jsonemployee, type):
     if type == "ADD":
@@ -329,15 +280,14 @@ def saveEmployeeInPacket(jsonemployee, type):
     if type == "ADD":
         global add_packetEmployees
         add_packetEmployees.append(body)
-        print("Colaborador nome:", jsonemployee["nome"], "e matricula:", jsonemployee["matricula"], "adicionado ao pacote ADD")
+        #print("Colaborador nome:", jsonemployee["nome"], "e matricula:", jsonemployee["matricula"], "adicionado ao pacote ADD")
 
     if type == "UPD":
         global upd_packetEmployees
         upd_packetEmployees.append(jsonemployee)
-        print("Colaborador nome:", jsonemployee["name"], "e matricula:", jsonemployee["registration"], "adicionado ao pacote UPD")
+        #print("Colaborador nome:", jsonemployee["name"], "e matricula:", jsonemployee["registration"], "adicionado ao pacote UPD")
     
 
-   
 def saveEmployeesInApiMw():
     print("Enviando pacote de colaboradores para API MW...")
     #need to receive the mobi json employee data
@@ -358,7 +308,7 @@ def saveEmployeesInApiMw():
     return True
 
 def checkEmployeeData(mobijsonemployee, mwjsonemployee):
-    print("verificando dados")
+    #print("verificando dados")
     isedited = False
     #print(mwjsonemployee)
     #print("--------------------------------------------------------")
@@ -454,7 +404,7 @@ def editEmployeeInMwApi():
             url = 'https://tecnologias.mwautomacao.com.br/api/employee/{registration}'.format(registration=colaborador["registration"])
 
 
-        print("editando colaborador:", colaborador["name"], "na mw api")
+        #print("editando colaborador:", colaborador["name"], "na mw api")
 
 
 
@@ -490,7 +440,7 @@ def editEmployeeInMwApi():
                 
             else:
                 print("colaborador:",colaborador["name"], "editado com sucesso!")
-                print(res.content)
+                #print(res.content)
                 break
             
 
@@ -602,33 +552,33 @@ def mainloop():
             print("")
 
             for mob_colab in employees_packetfromapi_mob:
-                print("")
+                #print("")
                 addneeded = True
-                print(mob_colab["nome"], mob_colab["matricula"])
-                print("verificando se este mob colaborador ja existe na mw api")
+                #print(mob_colab["nome"], mob_colab["matricula"])
+                #print("verificando se este mob colaborador ja existe na mw api")
 
                 for mw_colab in employees_packetfromapi_mw:
                     if (mw_colab["name"] == mob_colab["nome"] and
                         mw_colab["registration"] == mob_colab["matricula"]):
                         addneeded = False
-                        print("Este colaborador ja existe na mw api, verificando se foi editado")
+                        #print("Este colaborador ja existe na mw api, verificando se foi editado")
                         packetedit, bedited = checkEmployeeData(mob_colab, mw_colab)
 
                         if(bedited):
-                            print("inserindo colaborador no pacote para editar")
+                            #print("inserindo colaborador no pacote para editar")
                             saveEmployeeInPacket(packetedit, "UPD")
                         else:
-                            print("colaborador nao editado, tudo ok")
+                            #print("colaborador nao editado, tudo ok")
                             global employeesok_counter
                             employeesok_counter += 1
 
                         break
 
                 if addneeded:
-                    print("Colaborador nao existe na api mw, adicionando ao pacote")
+                    #print("Colaborador nao existe na api mw, adicionando ao pacote")
                     saveEmployeeInPacket(mob_colab, "ADD")
 
-                print("")
+                #print("")
 
 
             print("Encerrando sincronismo de colaboradores")
