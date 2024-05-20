@@ -198,7 +198,12 @@ def getAllMWEmployees():
             continue
         else:
             global employees_packetfromapi_mw
-            jsondata = json.loads(res.content)
+            try:
+                jsondata = json.loads(res.content)
+            except Exception:
+                print('failed at json, try to get a new token')
+                mwloginApi()
+                return False
 
             if len(jsondata["data"]) == 0:
                 print("sem colaboradores nesta pagina da api MW")
