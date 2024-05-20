@@ -152,7 +152,7 @@ def getAllMobiEmployees(codplanta):
 def mwloginApi():
     print('starting mw api login')
     url = 'https://tecnologias.mwautomacao.com.br/api/login'
-    body = '{"email": "{mwapiemail}", "password": "{mwapipassword}"}'.format(mwapiemail = mw_client_email_api, mwapipassword = mw_client_password_api)
+    body = '{"email": "%s", "password": "%s"}' % (mw_client_email_api, mw_client_password_api)
     res = requests.post(url, json=body)
 
     if res.status_code != 200:
