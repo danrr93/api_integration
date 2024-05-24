@@ -7,6 +7,12 @@
 #maior que o armazenado em lastevent.txt para enviar
 import requests, json, time
 
+#DEFINE DEFAULT PATH
+envir = 'LINUX'
+default_dir = '.'#WINDOWS ENV
+if envir == 'LINUX':
+    default_dir = '/home/ubuntu/integration'
+
 #script configurations
 #MW client
 #HONDA PLANTA 0
@@ -14,16 +20,22 @@ mw_client_id = "4a151167-29dc-45f5-9194-bd2c5a3a4fe5"
 mw_client_email_api = 'mobihonda_mwapi@mwautomacao.com'
 mw_client_password_api = 'mobi@!2023'
 mwtoken = ""
-mwtokenfile = "./mw_token_file.txt"
+mwtokenfile = default_dir + "/mw_token_file.txt"
 
 #Mobi client
 mobi_client_name = "MOB"
 mobi_client_login = "89bunzl9170"
 mobi_client_user = "RFIDUser"
 mobi_client_password = "RFIDUser12"
-mobitokenfile = "./mobi_api_token.txt"
+mobitokenfile = default_dir + "/mobi_api_token.txt"
 mobitoken = ""
 planta = 1
+
+
+#folder files vars
+eventsnumber = default_dir + "/eventsnumber.txt"
+lastevent = default_dir + "/lastevent.txt"
+
 
 #variavel que armazena matricula antiga necessaria para editar colaborador
 oldregistration = ""
@@ -69,24 +81,24 @@ except FileNotFoundError:
 
 try:
     # Try to open the file for reading
-    with open('./lastevent.txt', 'r') as file:
+    with open(lastevent, 'r') as file:
         # Read the contents of the file
         file.read()
 except FileNotFoundError:
     # If the file doesn't exist, create it
     print("File lastevent doesn't exist. Creating it...")
-    with open('./lastevent.txt', 'w') as file:
+    with open(lastevent, 'w') as file:
         file.write("")
 
 try:
     # Try to open the file for reading
-    with open('./eventsnumber.txt', 'r') as file:
+    with open(eventsnumber, 'r') as file:
         # Read the contents of the file
         file.read()
 except FileNotFoundError:
     # If the file doesn't exist, create it
     print("File lastevent doesn't exist. Creating it...")
-    with open('./eventsnumber.txt', 'w') as file:
+    with open(eventsnumber, 'w') as file:
         file.write("0")
 
 
@@ -446,7 +458,7 @@ def editEmployeeInMwApi():
 
 def getSendEvents():
     #varifica data e hora do ultimo evento enviado
-    with open('./lastevent.txt', 'r') as f:
+    with open(lastevent, 'r') as f:
         lastidevent = f.read()
 
     if len(lastidevent) == 0:
@@ -477,7 +489,7 @@ def getSendEvents():
     totalevents = len(jsonmwevents["data"])
 
     print("lendo numero de eventos em eventsnumber.txt")
-    with open('./eventsnumber.txt', 'r') as f:
+    with open(eventsnumber, 'r') as f:
         totaleventssended = f.read()
     totaleventssended = int(totaleventssended)
 
@@ -520,11 +532,11 @@ def getSendEvents():
 
         print("evento enviado")
         print(res.content)
-        with open('./lastevent.txt', 'w') as f:
+        with open(lastevent, 'w') as f:
             f.write(str(mwevent["id"]))
 
         totaleventssended += 1
-        with open('./eventsnumber.txt', 'w') as f:
+        with open(eventsnumber, 'w') as f:
             f.write(str(totaleventssended))
     
 
